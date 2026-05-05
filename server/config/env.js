@@ -14,10 +14,6 @@ export function validateEnv() {
     if (!jwtSecret || jwtSecret.trim().length < 32) {
       errors.push('JWT_SECRET must be at least 32 characters in production');
     }
-    const cors = process.env.CORS_ORIGINS?.trim();
-    if (!cors) {
-      errors.push('CORS_ORIGINS should be set in production (comma-separated allowed origins)');
-    }
   }
   if (errors.length > 0) {
     throw new Error(`Environment validation failed:\n- ${errors.join('\n- ')}`);

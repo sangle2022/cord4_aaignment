@@ -125,8 +125,23 @@ All `/vendors` and `/payouts` routes require `Authorization: Bearer <token>` fro
 
 ## Deployment notes
 
-- Deploy the **server** to Render, Railway, Fly.io, etc., with `MONGO_URI` and `JWT_SECRET` set.
-- Deploy the **client** static build (`npm run build` in `client/`) to Netlify or Vercel; set `VITE_API_URL` to the public API URL and configure CORS on the API if origins differ.
+### API (e.g. Render)
+
+Set these in the Render **Environment** tab:
+
+| Variable | Required | Notes |
+|----------|----------|--------|
+| `MONGO_URI` | Yes | MongoDB Atlas connection string |
+| `JWT_SECRET` | Yes | At least **32 characters** in production (Render sets `NODE_ENV=production`) |
+| `CORS_ORIGINS` | Recommended | Your frontend URLs, comma-separated, e.g. `https://myapp.onrender.com,https://myapp.vercel.app`. If omitted, the server still starts; you will see a security warning and browsers from any origin may call the API. |
+
+Optional: `TRUST_PROXY=true` so rate limiting uses the real client IP behind Render’s proxy.
+
+Set **Root Directory** to `server` (or use a start command that runs from `server/`). **Start Command:** `npm start`.
+
+### Frontend
+
+Build with `VITE_API_URL=https://your-api.onrender.com` (your live API URL), then deploy `client/dist` to Netlify or Vercel.
 
 ## Assumptions
 
