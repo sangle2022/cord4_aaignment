@@ -10,7 +10,7 @@ const payoutAuditSchema = new mongoose.Schema(
     performed_at: { type: Date, required: true, default: Date.now },
     metadata: { type: mongoose.Schema.Types.Mixed, default: {} },
   },
-  { timestamps: false }
+  { collection: 'payout_audits', timestamps: false }
 );
 
 payoutAuditSchema.index({ payout_id: 1, performed_at: -1 });
