@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { body, param, query } from 'express-validator';
 import {
   approvePayout,
   createPayout,
@@ -9,64 +8,27 @@ import {
   submitPayout,
 } from '../controllers/payoutController.js';
 import { authenticate, requireRoles } from '../middleware/auth.js';
-import { handleValidation } from '../middleware/validate.js';
-import { PAYOUT_MODES, PAYOUT_STATUSES } from '../models/Payout.js';
+import {
+  createPayoutRules,
+  listPayoutsQueryRules,
+  payoutIdParamRules,
+  rejectPayoutRules,
+} from '../validators/payoutValidators.js';
 
 const router = Router();
 
 router.use(authenticate);
 
-router.get(
-  '/',
-  [query('status').optional().isIn(PAYOUT_STATUSES), handleValidation],
-  listPayouts
-);
+router.get('/', ...listPayoutsQueryRules, listPayouts);
 
-router.post(
-  '/',
-  requireRoles(['OPS']),
-  [
-    body('vendor_id').isMongoId(),
-    body('amount')
-      .toFloat()
-      .custom((value) => value > 0)
-      .withMessage('Amount must be greater than 0'),
-    body('mode').isIn(PAYOUT_MODES),
-    body('note').optional().isString(),
-    handleValidation,
-  ],
-  createPayout
-);
+router.post('/', requireRoles(['OPS']), ...createPayoutRules, createPayout);
 
-router.get(
-  '/:id',
-  [param('id').isMongoId(), handleValidation],
-  getPayoutById
-);
+router.get('/:id', ...payoutIdParamRules, getPayoutById);
 
-router.post(
-  '/:id/submit',
-  requireRoles(['OPS']),
-  [param('id').isMongoId(), handleValidation],
-  submitPayout
-);
+router.post('/:id/submit', requireRoles(['OPS']), ...payoutIdParamRules, submitPayout);
 
-router.post(
-  '/:id/approve',
-  requireRoles(['FINANCE']),
-  [param('id').isMongoId(), handleValidation],
-  approvePayout
-);
+router.post('/:id/approve', requireRoles(['FINANCE']), ...payoutIdParamRules, approvePayout);
 
-router.post(
-  '/:id/reject',
-  requireRoles(['FINANCE']),
-  [
-    param('id').isMongoId(),
-    body('reason').isString().trim().notEmpty().withMessage('Rejection reason is required'),
-    handleValidation,
-  ],
-  rejectPayout
-);
+router.post('/:id/reject', requireRoles(['FINANCE']), ...rejectPayoutRules, rejectPayout);
 
 export default router;

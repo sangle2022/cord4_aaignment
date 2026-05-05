@@ -57,21 +57,13 @@ API base: `http://localhost:5000` (health: `GET /health`).
 
 ```bash
 cd client
-cp .env.example .env
-```
-
-Ensure `client/.env` points at the API:
-
-```env
-VITE_API_URL=http://localhost:5000
-```
-
-```bash
 npm install
 npm run dev
 ```
 
-Open the printed URL (typically `http://localhost:5173`).
+Open the printed URL (typically `http://localhost:5173`). **No `.env` is required for local dev:** the app calls `/api/...` and Vite proxies that to `http://localhost:5000`, so refreshing routes like `/payouts` still loads the SPA (it does not collide with `GET /payouts` on the API).
+
+Optional `client/.env`: set `VITE_API_URL=https://your-production-api.com` for deployed builds that talk to a remote API directly.
 
 ### 3. Sign in (seeded users)
 
@@ -93,13 +85,18 @@ Open the printed URL (typically `http://localhost:5173`).
 |-------------|--------------------------------------|
 | `PORT`      | HTTP port (default `5000`)          |
 | `MONGO_URI` | MongoDB connection string           |
-| `JWT_SECRET`| Secret for signing JWT access tokens |
+| `JWT_SECRET`| Secret for signing JWT access tokens (min 16 chars; **min 32 in production**) |
+| `CORS_ORIGINS` | Optional comma-separated browser origins (e.g. `http://localhost:5173`). If unset, any origin is allowed — set this when deploying. |
+| `TRUST_PROXY` | Set to `true` when behind a reverse proxy so rate limits use the real client IP. |
+| `RATE_LIMIT_MAX` | Max API requests per IP per 15 minutes (default 400). |
+| `LOGIN_RATE_LIMIT_MAX` | Max login attempts per IP per 15 minutes (default 30). |
+| `JSON_BODY_LIMIT` | Max JSON body size (default `100kb`). |
 
 ### `client/.env`
 
 | Variable       | Description                    |
 |----------------|--------------------------------|
-| `VITE_API_URL` | Base URL of the Express API    |
+| `VITE_API_URL` | Optional. Full API origin for production builds (e.g. `https://api.example.com`). If unset in dev, the app uses `/api` and Vite proxies to the backend. |
 
 ## API overview
 

@@ -14,6 +14,7 @@ import { getErrorMessage } from '../api/http.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { AppLayout } from '../components/AppLayout.jsx';
 import { LoadingState } from '../components/LoadingState.jsx';
+import { formatCurrency } from '../utils/format.js';
 
 const rejectSchema = yup
   .object({
@@ -88,102 +89,112 @@ export function PayoutDetailPage() {
 
   return (
     <AppLayout title="Payout detail">
-      <p>
-        <Link to="/payouts">← Back to payouts</Link>
-      </p>
+      <Link to="/payouts" className="link-arrow muted" style={{ marginBottom: '1rem', display: 'inline-flex' }}>
+        ← Back to payouts
+      </Link>
       {detailQuery.isLoading ? <LoadingState /> : null}
       {detailQuery.isError ? (
         <p className="error-text">{getErrorMessage(detailQuery.error)}</p>
       ) : null}
       {payout ? (
         <>
-          <div className="card stack">
-            <div className="row">
+          <div className="card card--elevated">
+            <div className="row" style={{ justifyContent: 'space-between', marginBottom: '1.25rem' }}>
               <span className={badgeClass(payout.status)}>{payout.status}</span>
-              <span className="muted">#{payout._id}</span>
+              <code className="muted" style={{ fontSize: '0.75rem', wordBreak: 'break-all' }}>
+                {payout._id}
+              </code>
             </div>
-            <p>
-              <strong>Vendor:</strong> {payout.vendor?.name || '—'}
-            </p>
-            <p>
-              <strong>Amount:</strong> {payout.amount}
-            </p>
-            <p>
-              <strong>Mode:</strong> {payout.mode}
-            </p>
-            <p>
-              <strong>Note:</strong> {payout.note || '—'}
-            </p>
-            {payout.status === 'Rejected' ? (
-              <p>
-                <strong>Decision reason:</strong> {payout.decision_reason || '—'}
-              </p>
-            ) : null}
-            <p className="muted">
-              Created: {payout.createdAt ? new Date(payout.createdAt).toLocaleString() : '—'}
-            </p>
+            <dl className="dl-grid">
+              <dt>Vendor</dt>
+              <dd>{payout.vendor?.name || '—'}</dd>
+              <dt>Amount</dt>
+              <dd style={{ fontSize: '1.15rem', fontWeight: 700 }}>{formatCurrency(payout.amount)}</dd>
+              <dt>Mode</dt>
+              <dd>{payout.mode}</dd>
+              <dt>Note</dt>
+              <dd>{payout.note || '—'}</dd>
+              {payout.status === 'Rejected' ? (
+                <>
+                  <dt>Decision</dt>
+                  <dd>{payout.decision_reason || '—'}</dd>
+                </>
+              ) : null}
+              <dt>Created</dt>
+              <dd className="muted">
+                {payout.createdAt ? new Date(payout.createdAt).toLocaleString() : '—'}
+              </dd>
+            </dl>
           </div>
 
-          <div className="card stack">
-            <h2 style={{ marginTop: 0 }}>Actions</h2>
-            {canSubmit ? (
-              <button
-                type="button"
-                className="btn"
-                disabled={submitMutation.isPending}
-                onClick={() => submitMutation.mutate()}
-              >
-                {submitMutation.isPending ? 'Submitting…' : 'Submit for approval'}
-              </button>
-            ) : null}
-            {canApprove ? (
-              <button
-                type="button"
-                className="btn"
-                disabled={approveMutation.isPending}
-                onClick={() => approveMutation.mutate()}
-              >
-                {approveMutation.isPending ? 'Approving…' : 'Approve'}
-              </button>
-            ) : null}
+          <div className="card card--elevated">
+            <h2 className="card-title">Actions</h2>
+            <div className="actions-stack">
+              {canSubmit ? (
+                <button
+                  type="button"
+                  className="btn"
+                  disabled={submitMutation.isPending}
+                  onClick={() => submitMutation.mutate()}
+                >
+                  {submitMutation.isPending ? 'Submitting…' : 'Submit for approval'}
+                </button>
+              ) : null}
+              {canApprove ? (
+                <button
+                  type="button"
+                  className="btn"
+                  disabled={approveMutation.isPending}
+                  onClick={() => approveMutation.mutate()}
+                >
+                  {approveMutation.isPending ? 'Approving…' : 'Approve payout'}
+                </button>
+              ) : null}
+            </div>
             {canReject ? (
               <form
-                className="stack"
+                className="stack stack--loose stack-separated"
                 onSubmit={handleSubmit((values) => rejectMutation.mutate(values))}
                 noValidate
               >
                 <div className="field">
-                  <label htmlFor="reason">Rejection reason</label>
-                  <textarea id="reason" rows={3} {...register('reason')} />
+                  <label htmlFor="reason">Rejection reason (required)</label>
+                  <textarea id="reason" rows={3} placeholder="Explain why Finance is rejecting" {...register('reason')} />
                   {errors.reason ? (
                     <span className="error-text">{errors.reason.message}</span>
                   ) : null}
                 </div>
                 <button type="submit" className="btn danger" disabled={rejectMutation.isPending}>
-                  {rejectMutation.isPending ? 'Rejecting…' : 'Reject'}
+                  {rejectMutation.isPending ? 'Rejecting…' : 'Reject payout'}
                 </button>
               </form>
             ) : null}
             {!canSubmit && !canApprove && !canReject ? (
-              <p className="muted">No actions available for your role or this status.</p>
+              <p className="muted" style={{ marginBottom: 0 }}>
+                No actions available for your role at this stage.
+              </p>
             ) : null}
           </div>
 
-          <div className="card">
-            <h2 style={{ marginTop: 0 }}>Audit trail</h2>
-            {auditTrail.length === 0 ? <p className="muted">No audit entries.</p> : null}
-            <ul style={{ paddingLeft: '1.1rem' }}>
-              {auditTrail.map((entry) => (
-                <li key={entry.id} style={{ marginBottom: '0.65rem' }}>
-                  <strong>{entry.action}</strong> ·{' '}
-                  {entry.performed_by?.email || entry.performed_by?.id || '—'} (
-                  {entry.performed_by?.role}) ·{' '}
-                  {entry.performed_at
-                    ? new Date(entry.performed_at).toLocaleString()
-                    : '—'}
-                </li>
-              ))}
-            </ul>
+          <div className="card card--elevated">
+            <h2 className="card-title">Audit trail</h2>
+            {auditTrail.length === 0 ? (
+              <p className="muted">No audit entries recorded.</p>
+            ) : (
+              <ul className="timeline">
+                {auditTrail.map((entry) => (
+                  <li key={entry.id}>
+                    <div className="timeline__action">{entry.action}</div>
+                    <div className="timeline__meta">
+                      <strong>{entry.performed_by?.email || '—'}</strong>
+                      {entry.performed_by?.role ? ` · ${entry.performed_by.role}` : ''}
+                      {' · '}
+                      {entry.performed_at ? new Date(entry.performed_at).toLocaleString() : '—'}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </>
       ) : null}

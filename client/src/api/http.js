@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_API_URL || '';
+/**
+ * Production / explicit: set VITE_API_URL (e.g. https://api.example.com).
+ * Local dev: omit VITE_API_URL to use `/api` — Vite proxies to the Express server
+ * without colliding with SPA routes (/payouts, /vendors, etc.).
+ */
+const baseURL = import.meta.env.VITE_API_URL || '/api';
 
 export const http = axios.create({
   baseURL,

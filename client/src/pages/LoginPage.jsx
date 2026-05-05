@@ -42,33 +42,45 @@ export function LoginPage() {
   });
 
   return (
-    <div className="container" style={{ maxWidth: 440 }}>
-      <h1>Sign in</h1>
-      <p className="muted">Use seeded OPS or FINANCE accounts from the README.</p>
-      <form
-        className="card stack"
-        onSubmit={handleSubmit((values) => mutation.mutate(values))}
-        noValidate
-      >
-        <div className="field">
-          <label htmlFor="email">Email</label>
-          <input id="email" type="email" autoComplete="username" {...register('email')} />
-          {errors.email ? <span className="error-text">{errors.email.message}</span> : null}
+    <div className="auth-shell">
+      <div className="auth-card">
+        <div className="auth-brand">
+          <span className="brand__mark" aria-hidden>
+            ₹
+          </span>
         </div>
-        <div className="field">
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            {...register('password')}
-          />
-          {errors.password ? <span className="error-text">{errors.password.message}</span> : null}
-        </div>
-        <button className="btn" type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? 'Signing in…' : 'Sign in'}
-        </button>
-      </form>
+        <h1 className="auth-card__title">Welcome back</h1>
+        <p className="auth-card__subtitle">
+          Sign in with your demo account — see the README for OPS and FINANCE credentials.
+        </p>
+        <form
+          className="stack stack--loose"
+          onSubmit={handleSubmit((values) => mutation.mutate(values))}
+          noValidate
+        >
+          <div className="field">
+            <label htmlFor="email">Email</label>
+            <input id="email" type="email" autoComplete="username" {...register('email')} />
+            {errors.email ? <span className="error-text">{errors.email.message}</span> : null}
+          </div>
+          <div className="field">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              {...register('password')}
+            />
+            {errors.password ? <span className="error-text">{errors.password.message}</span> : null}
+          </div>
+          <button className="btn btn--block" type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? 'Signing in…' : 'Sign in'}
+          </button>
+        </form>
+        <p className="muted" style={{ marginTop: '1.5rem', marginBottom: 0, textAlign: 'center', fontSize: '0.85rem' }}>
+          Ops and Finance roles use different actions — try both seeded accounts.
+        </p>
+      </div>
     </div>
   );
 }

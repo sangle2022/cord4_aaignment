@@ -47,56 +47,63 @@ export function PayoutCreatePage() {
   });
 
   return (
-    <AppLayout title="Create payout">
+    <AppLayout
+      title="Create payout"
+      description="New payouts start in Draft. Submit them when ready for Finance review."
+    >
       {vendorsQuery.isLoading ? <LoadingState /> : null}
-      <form
-        className="card stack"
-        onSubmit={handleSubmit((values) =>
-          mutation.mutate({
-            vendor_id: values.vendor_id,
-            amount: Number(values.amount),
-            mode: values.mode,
-            note: values.note || '',
-          })
-        )}
-        noValidate
-      >
-        <div className="field">
-          <label htmlFor="vendor_id">Vendor</label>
-          <select id="vendor_id" {...register('vendor_id')}>
-            <option value="">Select vendor</option>
-            {vendorsQuery.data?.map((v) => (
-              <option key={v._id} value={v._id}>
-                {v.name}
-              </option>
-            ))}
-          </select>
-          {errors.vendor_id ? (
-            <span className="error-text">{errors.vendor_id.message}</span>
-          ) : null}
-        </div>
-        <div className="field">
-          <label htmlFor="amount">Amount</label>
-          <input id="amount" type="number" step="0.01" {...register('amount')} />
-          {errors.amount ? <span className="error-text">{errors.amount.message}</span> : null}
-        </div>
-        <div className="field">
-          <label htmlFor="mode">Mode</label>
-          <select id="mode" {...register('mode')}>
-            <option value="UPI">UPI</option>
-            <option value="IMPS">IMPS</option>
-            <option value="NEFT">NEFT</option>
-          </select>
-          {errors.mode ? <span className="error-text">{errors.mode.message}</span> : null}
-        </div>
-        <div className="field">
-          <label htmlFor="note">Note (optional)</label>
-          <textarea id="note" rows={3} {...register('note')} />
-        </div>
-        <button className="btn" type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? 'Creating…' : 'Create draft'}
-        </button>
-      </form>
+      <div className="card card--elevated card--narrow">
+        <form
+          className="stack stack--loose"
+          onSubmit={handleSubmit((values) =>
+            mutation.mutate({
+              vendor_id: values.vendor_id,
+              amount: Number(values.amount),
+              mode: values.mode,
+              note: values.note || '',
+            })
+          )}
+          noValidate
+        >
+          <div className="field">
+            <label htmlFor="vendor_id">Vendor</label>
+            <select id="vendor_id" {...register('vendor_id')}>
+              <option value="">Select vendor</option>
+              {vendorsQuery.data?.map((v) => (
+                <option key={v._id} value={v._id}>
+                  {v.name}
+                </option>
+              ))}
+            </select>
+            {errors.vendor_id ? (
+              <span className="error-text">{errors.vendor_id.message}</span>
+            ) : null}
+          </div>
+          <div className="field">
+            <label htmlFor="amount">Amount (INR)</label>
+            <input id="amount" type="number" step="0.01" min="0" placeholder="0.00" {...register('amount')} />
+            {errors.amount ? <span className="error-text">{errors.amount.message}</span> : null}
+          </div>
+          <div className="field">
+            <label htmlFor="mode">Settlement mode</label>
+            <select id="mode" {...register('mode')}>
+              <option value="UPI">UPI</option>
+              <option value="IMPS">IMPS</option>
+              <option value="NEFT">NEFT</option>
+            </select>
+            {errors.mode ? <span className="error-text">{errors.mode.message}</span> : null}
+          </div>
+          <div className="field">
+            <label htmlFor="note">Internal note (optional)</label>
+            <textarea id="note" rows={3} placeholder="Reference or context for Finance" {...register('note')} />
+          </div>
+          <div className="actions-stack">
+            <button className="btn" type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? 'Creating…' : 'Save as draft'}
+            </button>
+          </div>
+        </form>
+      </div>
     </AppLayout>
   );
 }
